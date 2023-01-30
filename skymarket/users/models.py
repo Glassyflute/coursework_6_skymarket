@@ -17,10 +17,11 @@ class User(AbstractBaseUser):
     last_name = models.CharField(max_length=128)
     phone = PhoneNumberField(max_length=128)
     email = models.EmailField(max_length=254, unique=True)
-    role = models.CharField(max_length=15, choices=UserRoles.choices)
+    role = models.CharField(max_length=15, choices=UserRoles.choices, default=UserRoles.USER)
     image = models.ImageField(upload_to='profile/images/', null=True, blank=True)
-    is_active = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
     # password exists in Class ==> password = models.CharField(_('password'), max_length=128)
+    # phonenumberfield = as str in serializer?
 
     # константа USERNAME_FIELD определяет поле для логина пользователя
     USERNAME_FIELD = 'email'
@@ -57,6 +58,7 @@ class User(AbstractBaseUser):
     class Meta:
         verbose_name = "Пользователь"
         verbose_name_plural = "Пользователи"
+        ordering = ["id"]
 
     def __str__(self):
         return self.email

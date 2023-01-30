@@ -1,12 +1,8 @@
 from django.urls import include, path
 from djoser.views import UserViewSet
 from rest_framework.routers import SimpleRouter
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-
-# TODO подключите UserViewSet из Djoser.views к нашим urls.py
-# TODO для этого рекомендуется использовать SimpleRouter
-
+from users.views import UserImageView
 
 users_router = SimpleRouter()
 
@@ -15,8 +11,7 @@ users_router.register("users", UserViewSet, basename="users")
 
 urlpatterns = [
     path("", include(users_router.urls)),
-    path("token/", TokenObtainPairView.as_view()),
-    path("token/refresh/", TokenRefreshView.as_view()),
+    path("users/<int:pk>/upload_image/", UserImageView.as_view())
 ]
 
 # в итоге мы получаем необходимые urls:
