@@ -1,17 +1,18 @@
 from django.http import JsonResponse
-from django.urls import resolve
+
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import UpdateView
 from rest_framework import pagination, viewsets
+from rest_framework.decorators import action
 from rest_framework.generics import RetrieveAPIView, ListAPIView, CreateAPIView, UpdateAPIView, DestroyAPIView
 
 from ads.models import Ad, Comment
-from ads.serializers import AdSerializer, CommentSerializer, AdDetailSerializer, AdListSerializer, AdDestroySerializer
+from ads.serializers import AdSerializer, CommentSerializer, AdDetailSerializer, AdListSerializer
 
 
 class AdPagination(pagination.PageNumberPagination):
-    pass
+    page_size = 4
 
 
 # TODO view функции. Предлагаем Вам следующую структуру - но Вы всегда можете использовать свою
@@ -38,7 +39,7 @@ class AdMyView(ListAPIView):
     """
 
     queryset = Ad.objects.all()
-    serializer_class = AdListSerializer
+    serializer_class = AdSerializer
     # permission_classes = [IsAuthenticated]
 
     def get_queryset(self, *args, **kwargs):
@@ -49,7 +50,7 @@ class AdListView(ListAPIView):
     """
     Список всех объявлений
     """
-    serializer_class = AdListSerializer
+    serializer_class = AdSerializer
     queryset = Ad.objects.all()
 
     def get_queryset(self, *args, **kwargs):
@@ -70,8 +71,14 @@ class AdCreateView(CreateAPIView):
     Создание нового объявления
     """
     queryset = Ad.objects.all()
-    serializer_class = AdSerializer
+    serializer_class = AdDetailSerializer
     # permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        author_pk = self.request.user.pk
+        serializer.save(author_id=author_pk)
+
+
 
 
 class AdUpdateView(UpdateAPIView):
@@ -79,8 +86,21 @@ class AdUpdateView(UpdateAPIView):
     Обновление данных по объявлению
     """
     queryset = Ad.objects.all()
-    serializer_class = AdSerializer
+    serializer_class = AdDetailSerializer
     # permission_classes = [IsAuthenticated, IsAdAuthorOrStaff]
+
+    # def perform_update(self, serializer):
+    #     curr_user_pk = self.request.user.pk
+    #
+    #     ad_pk = self.kwargs.get("ad_pk")
+    #     if ad_pk in
+    #
+    #
+    #     ad = Ad.objects.filter(pk=ad_pk)
+    #
+    #     if curr_user_pk == ad.author.pk:
+    #         serializer.save()
+
 
 
 @method_decorator(csrf_exempt, name="dispatch")
@@ -108,15 +128,8 @@ class AdDeleteView(DestroyAPIView):
     Удаление объявления
     """
     queryset = Ad.objects.all()
-    serializer_class = AdDestroySerializer
+    serializer_class = AdDetailSerializer
     # permission_classes = [IsAuthenticated, IsAdAuthorOrStaff]
-
-
-
-
-
-
-
 
 
 class CommentViewSet(viewsets.ModelViewSet):
@@ -126,31 +139,20 @@ class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
 
-    def get_queryset(self, *args, **kwargs):
-        return super().get_queryset(*args, **kwargs).filter(ad_id=self.request.user.pk)
+    # список комментариев или конкретный коммент-й по выбранному объявлению
+    def get_queryset(self):
+        ad_pk = self.kwargs.get("ad_pk")
+        return Comment.objects.filter(ad_id=ad_pk)
 
-    def list(self, request, *args, **kwargs):
-        ad_pk = self.request.GET.get('ad_pk', None)
-        self.queryset = Comment.objects.filter(ad_id=ad_pk)
-        return super().list(request, *args, **kwargs)
-
-
-    # def get_queryset(self):
-    #
-    #     ad_pk = self.request.resolver_match.kwargs.get("comment.ad.pk")
-    #     self.queryset = Comment.objects.filter(ad_id=ad_pk)
-    #     return self.queryset
+    def perform_create(self, serializer):
+        ad_pk = self.kwargs.get("ad_pk")
+        author_pk = self.request.user.pk
+        serializer.save(author_id=author_pk, ad_id=ad_pk)
 
 
-    # def get_queryset(self):
-    #     ad_pk = self.request.GET.get('ad_pk', None)
-    #     self.queryset = Comment.objects.filter(ad_id=ad_pk)
-    #     return self.queryset
-
-
-
-#
-# def ad_pk_obtain(self, request):
-#     ad_pk = request.resolver_match.kwargs.get("ad_id")
-#     return ad_pk
+    # все комментарии пользователя, который под токеном, по разным объявлениям
+    # @action(detail=False)
+    # def my_list(self, request, *args, **kwargs):
+    #     self.queryset = Comment.objects.filter(author_id=request.user.pk)
+    #     return super().list(self, request, *args, **kwargs)
 

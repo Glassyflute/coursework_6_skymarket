@@ -24,7 +24,7 @@ class Ad(models.Model):
 class Comment(models.Model):
     text = models.TextField(max_length=1000)
     author = models.ForeignKey("users.User", related_name="comments", on_delete=models.CASCADE, null=True)
-    ad = models.ForeignKey("Ad", related_name="ads", on_delete=models.CASCADE, null=True)
+    ad = models.ForeignKey(Ad, related_name="ads", on_delete=models.CASCADE, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

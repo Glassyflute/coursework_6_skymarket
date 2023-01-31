@@ -1,6 +1,8 @@
 from django.urls import include, path
 
 from rest_framework.routers import SimpleRouter
+
+from ads.models import Ad
 from ads.views import CommentViewSet, AdDetailView, AdListView, AdCreateView, AdUpdateView, AdDeleteView, AdImageView, \
     AdMyView
 
@@ -28,6 +30,12 @@ urlpatterns = [
 ]
 
 urlpatterns += [path("<int:ad_pk>/", include(comments_router.urls))]
+# urlpatterns += [path(
+#     "<int:ad_pk>/comments/my_list/", CommentViewSet.as_view({"get": "list"})
+# )]
+
+# ad = AdDetailView.get_object(request)
+# urlpatterns += [path(f"ads/{ad.pk}/", include(comments_router.urls))]
 
 
 # urlpatterns = [

@@ -34,7 +34,6 @@ urlpatterns = [
     # path("comment/", include("ads.urls.comment")),
 
     path("api/", include("users.urls")),
-    # path("api/userr/", include(users_router.urls)),
 
     path("api/token/", TokenObtainPairView.as_view()),
     path("api/refresh/", TokenRefreshView.as_view()),

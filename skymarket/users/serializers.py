@@ -14,9 +14,14 @@ class UserRegistrationSerializer(BaseUserRegistrationSerializer):
 
 
 class CurrentUserSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+
+    def get_image(self, user):
+        return str(user.image)
+
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'phone', 'password', 'email', 'image', 'role']
+        fields = ['email', 'first_name', 'last_name', 'password', 'phone', 'image']
 
 
 # class UserRegistrationSerializer(BaseUserRegistrationSerializer):
