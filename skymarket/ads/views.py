@@ -19,11 +19,7 @@ class AdPagination(pagination.PageNumberPagination):
 
 # TODO view функции. Предлагаем Вам следующую структуру - но Вы всегда можете использовать свою
 # class AdViewSet(viewsets.ModelViewSet):
-#     """
-#     Класс с объявлениями с использованием Router и сериализатора
-#     """
-#     queryset = Ad.objects.all()
-#     serializer_class = AdSerializer
+#     pass
 
 
 class AdDetailView(RetrieveAPIView):
