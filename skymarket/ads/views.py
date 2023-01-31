@@ -6,8 +6,10 @@ from django.views.generic import UpdateView
 from rest_framework import pagination, viewsets
 from rest_framework.decorators import action
 from rest_framework.generics import RetrieveAPIView, ListAPIView, CreateAPIView, UpdateAPIView, DestroyAPIView
+from rest_framework.permissions import AllowAny, IsAuthenticated
 
 from ads.models import Ad, Comment
+from ads.permissions import IsObjectAuthorOrStaff
 from ads.serializers import AdSerializer, CommentSerializer, AdDetailSerializer, AdListSerializer
 
 
@@ -30,7 +32,7 @@ class AdDetailView(RetrieveAPIView):
     """
     queryset = Ad.objects.all()
     serializer_class = AdDetailSerializer
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
 
 class AdMyView(ListAPIView):
@@ -40,7 +42,7 @@ class AdMyView(ListAPIView):
 
     queryset = Ad.objects.all()
     serializer_class = AdSerializer
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self, *args, **kwargs):
         return super().get_queryset(*args, **kwargs).filter(author_id=self.request.user.pk)
@@ -52,18 +54,13 @@ class AdListView(ListAPIView):
     """
     serializer_class = AdSerializer
     queryset = Ad.objects.all()
+    permission_classes = [AllowAny]
 
     def get_queryset(self, *args, **kwargs):
         title = self.request.GET.get("title")
         if title:
             self.queryset = self.queryset.filter(title__icontains=title)
         return self.queryset
-
-    # queryset = Ad.objects.annotate(
-    #     location_names=F('author__location_names__name')
-    # ).order_by("-price")
-
-    # permission_classes = [AllowAny]
 
 
 class AdCreateView(CreateAPIView):
@@ -72,13 +69,11 @@ class AdCreateView(CreateAPIView):
     """
     queryset = Ad.objects.all()
     serializer_class = AdDetailSerializer
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
         author_pk = self.request.user.pk
         serializer.save(author_id=author_pk)
-
-
 
 
 class AdUpdateView(UpdateAPIView):
@@ -87,20 +82,7 @@ class AdUpdateView(UpdateAPIView):
     """
     queryset = Ad.objects.all()
     serializer_class = AdDetailSerializer
-    # permission_classes = [IsAuthenticated, IsAdAuthorOrStaff]
-
-    # def perform_update(self, serializer):
-    #     curr_user_pk = self.request.user.pk
-    #
-    #     ad_pk = self.kwargs.get("ad_pk")
-    #     if ad_pk in
-    #
-    #
-    #     ad = Ad.objects.filter(pk=ad_pk)
-    #
-    #     if curr_user_pk == ad.author.pk:
-    #         serializer.save()
-
+    permission_classes = [IsAuthenticated, IsObjectAuthorOrStaff]
 
 
 @method_decorator(csrf_exempt, name="dispatch")
@@ -129,30 +111,36 @@ class AdDeleteView(DestroyAPIView):
     """
     queryset = Ad.objects.all()
     serializer_class = AdDetailSerializer
-    # permission_classes = [IsAuthenticated, IsAdAuthorOrStaff]
+    permission_classes = [IsAuthenticated, IsObjectAuthorOrStaff]
 
 
 class CommentViewSet(viewsets.ModelViewSet):
     """
-    Класс с комментариями к объявлению с использованием Router и сериализатора
+    Класс с комментариями к объявлению
     """
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
 
-    # список комментариев или конкретный коммент-й по выбранному объявлению
+    # список комментариев или конкретный коммент-й по выбранному объявлению (ad_pk)
     def get_queryset(self):
         ad_pk = self.kwargs.get("ad_pk")
         return Comment.objects.filter(ad_id=ad_pk)
 
+    # получаем автоматом данные по pk для пользователя и объявления при создании коммента
     def perform_create(self, serializer):
         ad_pk = self.kwargs.get("ad_pk")
         author_pk = self.request.user.pk
         serializer.save(author_id=author_pk, ad_id=ad_pk)
 
+    default_permissions = [AllowAny()]
+    permissions = {
+        "retrieve": [IsAuthenticated()],
+        "update": [IsAuthenticated(), IsObjectAuthorOrStaff()],
+        "partial_update": [IsAuthenticated(), IsObjectAuthorOrStaff()],
+        "destroy": [IsAuthenticated(), IsObjectAuthorOrStaff()]
+    }
 
-    # все комментарии пользователя, который под токеном, по разным объявлениям
-    # @action(detail=False)
-    # def my_list(self, request, *args, **kwargs):
-    #     self.queryset = Comment.objects.filter(author_id=request.user.pk)
-    #     return super().list(self, request, *args, **kwargs)
+    def get_permissions(self):
+        return self.permissions.get(self.action, self.default_permissions)
+
 

@@ -14,8 +14,6 @@ class Ad(models.Model):
         verbose_name = "Объявление"
         verbose_name_plural = "Объявления"
         ordering = ["-created_at"]
-    # *Все записи при выдаче должны быть отсортированы по дате создания
-    # (чем новее, тем выше).*
 
     def __str__(self):
         return self.title

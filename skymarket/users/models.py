@@ -5,13 +5,6 @@ from phonenumber_field.modelfields import PhoneNumberField
 from django.utils.translation import gettext_lazy as _
 
 
-# class UserRoles(models.TextChoices):
-#     # enum-класс для пользователя
-#     # автоматический перевод на локальный язык пользователя
-#     USER = 'user', _('user')
-#     ADMIN = 'admin', _('admin')
-
-
 class User(AbstractBaseUser):
     first_name = models.CharField(max_length=128)
     last_name = models.CharField(max_length=128)
@@ -20,8 +13,6 @@ class User(AbstractBaseUser):
     role = models.CharField(max_length=15, choices=UserRoles.choices, default=UserRoles.USER)
     image = models.ImageField(upload_to='profile/images/', null=True, blank=True)
     is_active = models.BooleanField(default=True)
-    # password exists in Class ==> password = models.CharField(_('password'), max_length=128)
-    # phonenumberfield = as str in serializer?
 
     # константа USERNAME_FIELD определяет поле для логина пользователя
     USERNAME_FIELD = 'email'

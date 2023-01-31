@@ -27,7 +27,6 @@ class CommentSerializer(serializers.ModelSerializer):
 class AdSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ad
-        # fields = '__all__'
         fields = ["pk", "image", "title", "price", "description", "author_id"]
 
 
@@ -52,32 +51,9 @@ class AdDetailSerializer(serializers.ModelSerializer):
         fields = ["pk", "image", "title", "price", "phone", "description",
                   "author_first_name", "author_last_name", "author_id"]
 
-    # category = serializers.SlugRelatedField(
-    #     read_only=True,
-    #     slug_field="name"
-    # )
-    # location_names = serializers.SerializerMethodField()
-    # def get_location_names(self, ad):
-    #     return [location_elem.name for location_elem in ad.author.location_names.all()]
-
 
 class AdListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ad
         fields = '__all__'
-
-    # author = serializers.SlugRelatedField(
-    #     slug_field="username",
-    #     queryset=AdUser.objects.all()
-    # )
-    # category = serializers.SlugRelatedField(
-    #     slug_field="name",
-    #     queryset=Category.objects.all()
-    # )
-    #
-    # location_names = serializers.CharField()
-    #
-    # class Meta:
-    #     model = Ad
-    #     fields = ["id", "name", "price", "description", "image", "is_published", "author", "category", "location_names"]
 
